@@ -9,7 +9,7 @@ networks:
   demo:
 
 x-n8n: &service-n8n
-  image: n8nio/n8n:latest
+  image: n8nio/n8n:2.37.4
   networks: ['demo']
   environment:
     - DB_TYPE=postgresdb
@@ -147,6 +147,8 @@ services:
         condition: service_healthy
       n8n-import:
         condition: service_completed_successfully
+      qdrant:
+        condition: service_healthy
 
   qdrant:
     image: qdrant/qdrant
@@ -158,7 +160,11 @@ services:
       - 6333:6333
     volumes:
       - qdrant_storage:/qdrant/storage
-
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/6333'"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
   # ===========================================
   # Static File Server - Serves shared folder
   # ===========================================
